@@ -1,4 +1,4 @@
-setwd("~/Documents/code/temp_collective_code")
+setwd("~/Documents/code/stats")
 data <- read.csv("../../data/temp_collective/roi/stats_loom_latency.csv",header=TRUE,na.strings=c("[nan]"))
 
 lat1 <- data$latency

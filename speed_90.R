@@ -1,12 +1,26 @@
-speed <- stats_speed$`90_speed`
+stats_speed <- read.csv("stats_speed.csv",header=TRUE,na.strings=c("[nan]"))
+
+
+speed <- stats_speed$X90_speed
 temp <- stats_speed$Temperature
 gs <- stats_speed$Groupsize
 
-n <- length(stats_speed$`90_speed`)
+n <- length(stats_speed$X90_speed)
 speed_data <- as.data.frame(cbind(sample = (1:n),speed,temp,gs))
+
+######### Linear model with temperature and group size ####
+
 model <- lm(speed ~ temp + gs,speed_data)
 summary(model)
+
+
+############## Errors ####################
+
 plot(fitted(model), residuals(model))
+
+plot(temp, residuals(model))
+plot(gs, residuals(model))
+
 qqnorm(residuals(model))
 qqline(residuals(model))
 
@@ -17,6 +31,10 @@ model_int <- lm(speed ~ temp*gs,speed_data)
 summary(model_int)
 plot(fitted(model_int), residuals(model_int))
 
+qqnorm(residuals(model_int))
+qqline(residuals(model_int))
+
+################
 require(MASS)
 boxcox(model_int,plotit=TRUE)
 
@@ -26,7 +44,7 @@ plot(fitted(model_transform), residuals(model_transform))
 
 qqnorm(residuals(model_transform))
 qqline(residuals(model_transform))
-
+########################################### log tranformation ####
 require(MASS)
 boxcox(model,plotit=TRUE)
 
@@ -48,6 +66,7 @@ qqline(residuals(model_exp_inv))
 
 shapiro.test(residuals(model_exp_inv))
 
+############### 
 
 
 transform.bc <- function(x)(exp(x))

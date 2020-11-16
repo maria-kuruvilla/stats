@@ -7,6 +7,7 @@ n <- length(stats_speed_acc_latency$`90_acc`)
 data <- as.data.frame(cbind(sample = (1:n),temp,gs,acc,lat))
 model_acc <- lm(acc ~ temp + gs,data)
 summary(model_acc)
+
 plot(fitted(model_acc), residuals(model_acc))
 qqnorm(residuals(model_acc))
 qqline(residuals(model_acc))
@@ -44,3 +45,6 @@ plot(fitted(model_inv_int), residuals(model_inv_int))
 
 qqnorm(residuals(model_inv_int))
 qqline(residuals(model_inv_int))
+
+model_x <- lm(acc ~ temp + I(temp^2) + gs, data)
+summary(model_x)
