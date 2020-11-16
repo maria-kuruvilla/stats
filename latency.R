@@ -11,7 +11,22 @@ plot(fitted(model_lat), residuals(model_lat))
 qqnorm(residuals(model_lat))
 qqline(residuals(model_lat))
 
-shapiro.test(residuals(model_lat))
+model_quad <- lm(lat ~ temp + gs + I(temp^2),data)
+summary(model_quad)
+plot(fitted(model_quad), residuals(model_quad))
+qqnorm(residuals(model_quad))
+qqline(residuals(model_quad))
+
+shapiro.test(residuals(model_quad))
+
+model_quad_int <- lm(lat ~ temp*gs + I(temp^2),data)
+summary(model_quad_int)
+plot(fitted(model_quad_int), residuals(model_quad_int))
+qqnorm(residuals(model_quad_int))
+qqline(residuals(model_quad_int))
+
+shapiro.test(residuals(model_quad_int))
+
 
 model_lat_int <- lm(lat ~ temp*gs,data)
 summary(model_lat_int)
@@ -41,4 +56,6 @@ summary(model_glm)
 model_pois <- glm(lat ~ temp + gs, family = poisson,stats_speed_acc_latency)
 summary(model_pois)
 
+model_pois_quad <- glm(lat ~ temp + gs + I(temp^2), family = poisson,stats_speed_acc_latency)
+summary(model_pois_quad)
 
