@@ -58,4 +58,4 @@ summary(model_pois)
 
 model_pois_quad <- glm(lat ~ temp + gs + I(temp^2), family = poisson,stats_speed_acc_latency)
 summary(model_pois_quad)
-
+  
