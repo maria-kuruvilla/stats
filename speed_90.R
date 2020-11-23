@@ -1,5 +1,4 @@
-stats_speed <- read.csv("stats_speed.csv",header=TRUE,na.strings=c("[nan]"))
-
+stats_speed <- read.csv("../../data/temp_collective/roi/stats_speed.csv",header=TRUE,na.strings=c("[nan]"))
 
 speed <- stats_speed$X90_speed
 temp <- stats_speed$Temperature
@@ -48,7 +47,7 @@ qqline(residuals(model_transform))
 require(MASS)
 boxcox(model,plotit=TRUE)
 
-model_exp <- lm(log(speed) ~ temp + gs,speed_data)
+model_exp <- lm(log(speed) ~ temp + log(gs,2),speed_data)
 summary(model_exp)
 plot(fitted(model_exp), residuals(model_exp))
 

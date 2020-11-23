@@ -1,5 +1,6 @@
 data <- read.csv("../../data/temp_collective/roi/startles_ratio_csv.csv",header=TRUE,na.strings=c("[nan]"))
 accuracy <- data$accuracy
+hist(accuracy)
 temp <- data$Temperature
 gs <- data$Groupsize
 date <- as.numeric(as.Date(data$Date, format = "%d/%m/%Y"))
@@ -88,3 +89,8 @@ plot(fitted(model9), residuals(model9))
 qqnorm(residuals(model9))
 qqline(residuals(model9))
 
+model10 <- glm(accuracy ~ temp + gs, family = binomial,data)
+summary(model10)
+
+model11 <- glm(accuracy ~ temp*gs, family = binomial,data)
+summary(model11)

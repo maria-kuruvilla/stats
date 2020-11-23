@@ -1,4 +1,7 @@
-acc <- stats_speed_acc_latency$`90_acc`
+stats_speed_acc_latency <- read.csv("../../data/temp_collective/roi/stats_speed_acc_latency.csv",header=TRUE,na.strings=c("[nan]"))
+
+
+acc <- stats_speed_acc_latency$X90_acc
 lat <- stats_speed_acc_latency$latency
 temp <- stats_speed_acc_latency$Temperature
 gs <- stats_speed_acc_latency$Groupsize
@@ -30,7 +33,7 @@ boxcox(model_acc,plotit=TRUE)
 
 boxcox(model_acc_int,plotit=TRUE)
 
-model_inv <- lm(acc^(-1) ~ temp + gs,speed_data)
+model_inv <- lm(log(acc) ~ temp + gs,speed_data)
 summary(model_inv)
 plot(fitted(model_inv), residuals(model_inv))
 
