@@ -1,10 +1,10 @@
 stats_speed <- read.csv("../../data/temp_collective/roi/stats_speed.csv",header=TRUE,na.strings=c("[nan]"))
 
-speed <- stats_speed$X90_speed
+speed <- stats_speed$'90_speed'
 temp <- stats_speed$Temperature
 gs <- stats_speed$Groupsize
 
-n <- length(stats_speed$X90_speed)
+n <- length(stats_speed$'90_speed')
 speed_data <- as.data.frame(cbind(sample = (1:n),speed,temp,gs))
 
 ######### Linear model with temperature and group size ####
@@ -64,6 +64,17 @@ qqnorm(residuals(model_exp_inv))
 qqline(residuals(model_exp_inv))
 
 shapiro.test(residuals(model_exp_inv))
+
+model_log <- lm(log(speed) ~ temp + I(temp^2) + log(gs,2),speed_data)
+summary(model_log)
+plot(fitted(model_log), residuals(model_log))
+
+qqnorm(residuals(model_log))
+qqline(residuals(model_log))
+
+shapiro.test(residuals(model_log))
+
+
 
 ############### 
 

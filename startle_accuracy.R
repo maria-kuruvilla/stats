@@ -87,10 +87,13 @@ model9 <- lm(accuracy1^(3/2) ~ temp1*gs1,data1)
 summary(model9)
 plot(fitted(model9), residuals(model9))
 qqnorm(residuals(model9))
-qqline(residuals(model9))
+  qqline(residuals(model9))
 
-model10 <- glm(accuracy ~ temp + gs, family = binomial,data)
+model10 <- glm(accuracy ~ temp + gs + I(temp^2), family = binomial,data)
 summary(model10)
 
 model11 <- glm(accuracy ~ temp*gs, family = binomial,data)
 summary(model11)
+
+model12 <- glm(accuracy ~ temp + gs, family = binomial,data)
+summary(model12)

@@ -48,7 +48,7 @@ plot(fitted(model10), residuals(model10))
 qqnorm(residuals(model10))
 qqline(residuals(model10))
 
-model_pois <- glm(lat ~ temp + gs, family = quasipoisson, data)
+model_pois <- glm(lat ~ temp + gs + I(temp^2), family = quasipoisson, data)
 summary(model_pois)
 
 model_pois2 <- glm(lat ~ temp*gs, family = quasipoisson, data)

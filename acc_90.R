@@ -6,9 +6,9 @@ lat <- stats_speed_acc_latency$latency
 temp <- stats_speed_acc_latency$Temperature
 gs <- stats_speed_acc_latency$Groupsize
 
-n <- length(stats_speed_acc_latency$`90_acc`)
+n <- length(stats_speed_acc_latency$X90_acc)
 data <- as.data.frame(cbind(sample = (1:n),temp,gs,acc,lat))
-model_acc <- lm(acc ~ temp + gs,data)
+model_acc <- lm(log(acc) ~ temp + gs,data)
 summary(model_acc)
 
 plot(fitted(model_acc), residuals(model_acc))
@@ -18,11 +18,19 @@ qqline(residuals(model_acc))
 shapiro.test(residuals(model_acc))
 
 
-model_acc_int <- lm(acc ~ temp*gs,data)
+model_acc_int <- lm(log(acc) ~ temp*gs,data)
 summary(model_acc_int)
 plot(fitted(model_acc_int), residuals(model_acc_int))
 qqnorm(residuals(model_acc_int))
 qqline(residuals(model_acc_int))
+
+shapiro.test(residuals(model_acc_int))
+
+model_acc_int_quad <- lm(log(acc) ~ temp*gs + I(temp^2),data)
+summary(model_acc_int_quad)
+plot(fitted(model_acc_int_quad), residuals(model_acc_int_quad))
+qqnorm(residuals(model_acc_int_quad))
+qqline(residuals(model_acc_int_quad))
 
 shapiro.test(residuals(model_acc_int))
 
