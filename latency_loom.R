@@ -56,3 +56,16 @@ summary(model_pois2)
 
 model_pois3 <- glm.nb(lat ~ temp*gs, data)
 summary(model_pois3)
+
+model_pois4 <- glm(lat ~ temp + gs + I(temp^2), family = quasipoisson, data)
+summary(model_pois4)
+
+model_pois5 <- glm(lat ~ temp + gs*I(temp^2), family = quasipoisson, data)
+summary(model_pois5)
+
+
+### this is the one 
+model_pois6 <- glm(lat ~ temp + gs*loom + I(temp^2), family = quasipoisson, data)
+summary(model_pois6)
+
+
