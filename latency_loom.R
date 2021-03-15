@@ -127,5 +127,6 @@ summary(model_pois5)
 model_pois6 <- glm(lat ~ temp + gs*loom + I(temp^2), family = quasipoisson, data)
 summary(model_pois6)
 
-
-
+require(faraway)
+cook <- cooks.distance(model_pois6)
+halfnorm(cook)
