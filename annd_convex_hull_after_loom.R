@@ -165,7 +165,7 @@ summary(model_lm_trans)
 plot(fitted(model_lm_trans),residuals(model_lm_trans))
 
 newData1 <- data.frame(expand.grid(temp = seq(from = 9, to = 29, by = 1), 
-                                   gs = c(1,2,4,8,16),
+                                   gs = c(2,4,8,16),
                                    trial = unique(my_data$trial),
                                    date = unique(my_data$date)))
 boots <- 10000
@@ -181,3 +181,44 @@ for(j in 1:nrow(newData1)){
   results[j,2] <- quantile(yest[j,],probs = c(0.025))
   results[j,3] <- quantile(yest[j,],probs = c(0.975))
 }  
+
+intersection <- intersect(which(newData1$gs == 8),
+                          intersect(which(newData1$trial == 10),
+                          which(newData1$date == 18106)))
+
+temp <- newData1$temp[intersection]
+
+plot(my_data$temp, my_data$annd)
+lines(temp, exp(results[intersection,1]),lty = "solid")
+lines(temp, exp(results[intersection,2]),lty = "dashed")
+lines(temp, exp(results[intersection,3]),lty = "dashed")
+
+#gs 16
+intersection <- intersect(which(newData1$gs == 16),
+                          intersect(which(newData1$trial == 10),
+                                    which(newData1$date == 18106)))
+
+temp <- newData1$temp[intersection]
+
+plot(my_data$temp, my_data$annd)
+lines(temp, exp(results[intersection,1]),lty = "solid")
+lines(temp, exp(results[intersection,2]),lty = "dashed")
+lines(temp, exp(results[intersection,3]),lty = "dashed")
+
+#gs 1
+intersection <- intersect(which(newData1$gs == 1),
+                          intersect(which(newData1$trial == 10),
+                                    which(newData1$date == 18106)))
+
+temp <- newData1$temp[intersection]
+
+plot(my_data$temp, my_data$annd)
+lines(temp, exp(results[intersection,1]),lty = "solid")
+lines(temp, exp(results[intersection,2]),lty = "dashed")
+lines(temp, exp(results[intersection,3]),lty = "dashed")
+
+newData1$annd <- results[,1]
+newData1$annd025 <- results[,2]
+newData1$annd975 <- results[,3]
+
+write.csv(newData1,"/home/maria/Documents/data/temp_collective/roi/annd_after_loom_predictions.csv")
