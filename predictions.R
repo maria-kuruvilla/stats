@@ -72,6 +72,9 @@ lines(temp,results[chknyes,1], lty = "solid", col = "green")
 lines(temp,results[chknyes,2], lty = "dashed", col = "green")
 lines(temp,results[chknyes,3], lty = "dashed", col = "green")
 
+##
+fitted_model <- fit(model_pois6, data)
+dat2 <- predict(fitted_model, uncertain = FALSE, alpha = 0.1)
 
 #loom_speed_percentiles
 percentiles <- read.csv("../../data/temp_collective/roi/stats_loom_low_pass_data.csv",header=TRUE,na.strings=c("[nan]"))
