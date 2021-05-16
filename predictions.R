@@ -23,6 +23,12 @@ for(j in 1:nrow(newData1)){
   results[j,2] <- quantile(yest[j,],probs = c(0.025))
   results[j,3] <- quantile(yest[j,],probs = c(0.975))
 }  
+
+newData1$startles <- results[,1]
+newData1$startles025 <- results[,2]
+newData1$startles975 <- results[,3]
+write.csv(newData1,"/home/maria/Documents/data/temp_collective/roi/number_startles_predictions.csv")
+
 chknyes <- interesect(which(newData1$Groupsize == 16),which(newData1$Loom == 1))  
 chknno <- which(newData1$Groupsize == 1)
 temp <- newData1$Temperature[chknyes]
@@ -40,6 +46,7 @@ data <- read.csv("../../data/temp_collective/roi/stats_loom_latency_nan.csv",hea
 
 model_pois6 <- glm(latency ~ Temperature + Groupsize*loom + I(Temperature^2), family = quasipoisson, data)
 summary(model_pois6)
+plot(fitted(model_pois6),residuals(model_pois6))
 
 newdata3 <- data.frame(Temperature = seq(9,29,1), Groupsize = 16, loom = 1)
 preds3 <- predict(model_pois6,newdata3, type = "response")
@@ -72,9 +79,15 @@ lines(temp,results[chknyes,1], lty = "solid", col = "green")
 lines(temp,results[chknyes,2], lty = "dashed", col = "green")
 lines(temp,results[chknyes,3], lty = "dashed", col = "green")
 
-##
-fitted_model <- fit(model_pois6, data)
-dat2 <- predict(fitted_model, uncertain = FALSE, alpha = 0.1)
+require(ciTools)
+df_ints <- add_ci(data, model_pois6, names = c("lcb", "ucb"), alpha = 0.05)
+
+
+#intersection
+intersection <- intersect(which(df_ints$Groupsize==1),which(df_ints$loom==1))
+plot(data$Temperature,data$latency)
+lines(df_ints$Temperature[intersection],df_ints$lcb[intersection])
+lines(df_ints$Temperature[intersection],df_ints$ucb[intersection])
 
 #loom_speed_percentiles
 percentiles <- read.csv("../../data/temp_collective/roi/stats_loom_low_pass_data.csv",header=TRUE,na.strings=c("[nan]"))
