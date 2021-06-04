@@ -716,7 +716,12 @@ qqline(residuals(model_lm))
 
 ################################
 
-data <- read.csv(here("Documents","data","temp_collective","roi","all_params_w_loom.csv"),header=TRUE,na.strings=c("[nan]"))
+
+#data <- read.csv(here("Documents","data","temp_collective","roi","all_params_w_loom.csv"),header=TRUE,na.strings=c("[nan]"))
+
+
+data <- read.csv(here("data","temp_collective","roi","all_params_w_loom.csv"),header=TRUE,na.strings=c("[nan]"))
+
 
 # make new dataframe
 
@@ -743,6 +748,36 @@ plot(fitted(model_pois6),residuals(model_pois6))
 (chat <- deviance(model_pois6) / df.residual(model_pois6))
 require(MuMIn)
 QAIC(model_pois6, chat = chat)
+
+
+##trying again
+
+
+dfun <- function(object){with(object,sum((weights * residuals^2)[weights > 0])/df.residual)}
+
+
+model_pois <- glm(latency ~ temp*gs + I(temp^2) + loom, family = poisson, my_new_data2)
+
+model_qpois <- glm(latency ~ temp*gs + I(temp^2) + loom, family = quasipoisson, my_new_data2)
+
+
+#extract log likelihoods
+
+(sum(dpois(my_new_data2$latency,lambda=exp(predict(model_pois)),log=TRUE)))
+
+(logLik(model_pois))
+
+library(MuMIn); packageVersion("MuMIn")
+
+x.quasipoisson <- function(...){
+  res <- quasipoisson(...)
+  res$aic <- poisson(...)$aic
+  res
+}
+
+model_qpois2 <- update(model_pois,family="x.quasipoisson",na.action=na.fail)
+
+(gg <-  dredge(model_qpois2,rank="QAIC", chat=dfun(model_pois)))
 
 
 ###########################################
