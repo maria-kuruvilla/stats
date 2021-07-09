@@ -113,6 +113,24 @@ summary(model_pois6)
 plot(fitted(model_pois6),residuals(model_pois6))
 #residual dev = 199 out of 215
 
+# goodness of fit?
+
+X2 <- sum((my_new_data2$latency - fitted(model_pois6))^2 / fitted(model_pois6))
+## likelihood ratio test
+pchisq(X2, df = nn - length(coef(model_pois6)),
+       lower.tail = FALSE)
+
+# p value
+
+## deviance of full model
+D_full <- summary(model_pois6)$deviance
+## deviance of null model
+D_null <- summary(model_pois6)$null.deviance
+## test statistic
+lambda <- D_null - D_full
+## LRT with df = 2
+(p_value <- pchisq(lambda, 3, lower.tail = FALSE))
+
 #predictions
 
 require(ciTools)
@@ -218,6 +236,17 @@ newData1$prop_startles025 <- results[,2]
 newData1$prop_startles975 <- results[,3]
 
 write.csv(newData1,"/home/maria/Documents/data/temp_collective/roi/prop_startles_predictions.csv")
+
+#p value
+
+## deviance of full model
+D_full <- summary(model_glm)$deviance
+## deviance of null model
+D_null <- summary(model_glm)$null.deviance
+## test statistic
+lambda <- D_null - D_full
+## LRT with df = 1
+(p_value <- pchisq(lambda, 5, lower.tail = FALSE))
 
 
 #########################################
@@ -508,6 +537,36 @@ newData1$acc99_025 <- results[,2]
 newData1$acc99_975 <- results[,3]
 
 write.csv(newData1,"/home/maria/Documents/data/temp_collective/roi/acc_99_predictions_new.csv")
+
+# new predictions with tempr squared
+
+
+model_lm <- lm(log(acc+1) ~ temp + I(temp^2) + log(gs,2) + I(log(gs,2)^2),my_new_data)
+summary(model_lm)
+plot(fitted(model_lm), residuals(model_lm))
+#r sq = 0.1962 #neither temp terms significant
+extractAIC(model_lm) #-657
+
+newData1 <- data.frame(expand.grid(temp = seq(from = 9, to = 29, by = 1), gs = c(1,2,4,8,16)))
+boots <- 10000
+yest <- matrix(NA,nrow=nrow(newData1),ncol=boots)
+for(i in 1:boots){
+  ynew <- unlist(simulate(model_lm))
+  ymod <- update(model_lm,ynew ~ .)
+  yest[,i] <- predict(ymod,newdata = newData1, type="response")
+}
+results <- matrix(NA,nrow=nrow(newData1),ncol=3)
+results[,1] <- predict(model_lm,newData1, type = "response")
+for(j in 1:nrow(newData1)){
+  results[j,2] <- quantile(yest[j,],probs = c(0.025))
+  results[j,3] <- quantile(yest[j,],probs = c(0.975))
+}  
+newData1$acc99 <- results[,1]
+newData1$acc99_025 <- results[,2]
+newData1$acc99_975 <- results[,3]
+
+write.csv(newData1,"/home/maria/Documents/data/temp_collective/roi/acc_99_predictions_new_squared.csv")
+
 
 
 ## new predictions for avg acceleration
@@ -1163,4 +1222,67 @@ model_lm <- lm(pol ~ temp  + log(gs,2) + t + date, my_data)
 summary(model_lm)
 plot(fitted(model_lm),residuals(model_lm))
 #r sq = 0.02  #residuals are okay. 
+
+## acc just before each loom
+
+
+
+data <- read.csv(here("Documents","data","temp_collective","roi","speed_acc_before_loom_params_w_loom.csv"),header=TRUE,na.strings=c("[nan]"))
+
+my_data<-data.frame("temp" = data$Temperature[complete.cases(data$acc_percentile99)],
+                    "gs" = data$Groupsize[complete.cases(data$acc_percentile99)],
+                    "kt"=1/(0.00008617*(data$Temperature[complete.cases(data$acc_percentile99)]+273.1)),
+                    "date"=as.numeric(as.Date(data$Date[complete.cases(data$acc_percentile99)], format = "%d/%m/%Y")),
+                    "trial" = data$Trial[complete.cases(data$acc_percentile99)],
+                    "subtrial" = data$Subtrial[complete.cases(data$acc_percentile99)],
+                    "loom" = data$Loom[complete.cases(data$acc_percentile99)],
+                    "t1" = as.numeric(as.POSIXct(data$Time_fish_in[complete.cases(data$acc_percentile99)], format = "%H:%M")),
+                    "t2" = as.numeric(as.POSIXct(data$Time_start_record[complete.cases(data$acc_percentile99)], format = "%H:%M")),
+                    "acc" = data$acc_percentile99[complete.cases(data$acc_percentile99)]
+)
+
+
+model_lm <- lm(log(acc+1) ~ temp + log(gs,2) + I(log(gs,2)^2),my_data)
+summary(model_lm)
+plot(fitted(model_lm), residuals(model_lm))
+#r sq = 0.078 # temp is significant
+qqnorm(residuals(model_lm), main= "")
+qqline(residuals(model_lm))
+extractAIC(model_lm) #-2562
+
+model_lm <- lm(log(acc+1) ~ I(temp^2) + temp + log(gs,2) + I(log(gs,2)^2) + loom,my_data)
+summary(model_lm)
+plot(fitted(model_lm), residuals(model_lm))
+#r sq = 0.088 # temp is significant
+qqnorm(residuals(model_lm), main= "")
+qqline(residuals(model_lm))
+extractAIC(model_lm) #-2572 #best
+
+model_lm <- lm(log(acc+1) ~ I(temp^2) + temp + log(gs,2) + I(log(gs,2)^2),my_data)
+summary(model_lm)
+plot(fitted(model_lm), residuals(model_lm))
+#r sq = 0.088 # temp is significant
+qqnorm(residuals(model_lm), main= "")
+qqline(residuals(model_lm))
+extractAIC(model_lm) #-2573 #best
+
+newData1 <- data.frame(expand.grid(temp = seq(from = 9, to = 29, by = 1), gs = c(1,2,4,8,16)))
+boots <- 10000
+yest <- matrix(NA,nrow=nrow(newData1),ncol=boots)
+for(i in 1:boots){
+  ynew <- unlist(simulate(model_lm))
+  ymod <- update(model_lm,ynew ~ .)
+  yest[,i] <- predict(ymod,newdata = newData1, type="response")
+}
+results <- matrix(NA,nrow=nrow(newData1),ncol=3)
+results[,1] <- predict(model_lm,newData1, type = "response")
+for(j in 1:nrow(newData1)){
+  results[j,2] <- quantile(yest[j,],probs = c(0.025))
+  results[j,3] <- quantile(yest[j,],probs = c(0.975))
+}  
+newData1$acc99 <- results[,1]
+newData1$acc99_025 <- results[,2]
+newData1$acc99_975 <- results[,3]
+
+write.csv(newData1,"/home/maria/Documents/data/temp_collective/roi/acc_before_loom_99_predictions_new_squared.csv")
 

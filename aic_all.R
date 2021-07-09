@@ -27,6 +27,15 @@ qqline(residuals(model_lm))
 extractAIC(model_lm) #-683
 #this is best
 
+model_lm <- lm(log(speed+1) ~ 1,my_data)
+summary(model_lm)
+plot(fitted(model_lm),residuals(model_lm))
+#r sq =0.1127
+qqnorm(residuals(model_lm), main= "")
+qqline(residuals(model_lm))
+extractAIC(model_lm) #-657
+
+
 model_lm <- lm(log(speed+1) ~ temp + log(gs,2) ,my_data)
 summary(model_lm)
 plot(fitted(model_lm),residuals(model_lm))
@@ -59,6 +68,34 @@ summary(model_lm)
 plot(fitted(model_lm),residuals(model_lm))
 extractAIC(model_lm) #-680
 
+model_lm <- lm(log(speed+1) ~ I(temp^2) + temp ,my_data)
+summary(model_lm)
+plot(fitted(model_lm),residuals(model_lm))
+extractAIC(model_lm) #-684
+
+#2nd predictions
+
+newData1<- data.frame(expand.grid(temp = seq(from = 9, to = 29, by = 1)))
+boots <- 10000
+yest <- matrix(NA,nrow=nrow(newData1),ncol=boots)
+for(i in 1:boots){
+  ynew <- unlist(simulate(model_lm))
+  ymod <- update(model_lm,ynew ~ .)
+  yest[,i] <- predict(ymod,newdata = newData1, type="response")
+}
+results <- matrix(NA,nrow=nrow(newData1),ncol=3)
+results[,1] <- predict(model_lm,newData1, type = "response")
+for(j in 1:nrow(newData1)){
+  results[j,2] <- quantile(yest[j,],probs = c(0.025))
+  results[j,3] <- quantile(yest[j,],probs = c(0.975))
+}  
+newData1$speed99 <- results[,1]
+newData1$speed99_025 <- results[,2]
+newData1$speed99_975 <- results[,3]
+
+write.csv(newData1,"/home/maria/Documents/data/temp_collective/roi/speed99_before_loom_predictions_new.csv")
+
+
 my_data<-data.frame("temp" = data$Temperature[complete.cases(data$speed_percentile50)],
                     "gs" = data$Groupsize[complete.cases(data$speed_percentile50)],
                     "kt"=1/(0.00008617*(data$Temperature[complete.cases(data$speed_percentile50)]+273.1)),
@@ -71,6 +108,7 @@ my_data<-data.frame("temp" = data$Temperature[complete.cases(data$speed_percenti
 )
 
 
+
 model_lm <- lm(log(speed+1) ~ temp,my_data)
 summary(model_lm)
 plot(fitted(model_lm),residuals(model_lm))
@@ -78,6 +116,38 @@ plot(fitted(model_lm),residuals(model_lm))
 qqnorm(residuals(model_lm), main= "")
 qqline(residuals(model_lm))
 extractAIC(model_lm) #-812
+#this is best
+
+
+
+my_data<-data.frame("temp" = data$Temperature[complete.cases(data$avg_speed)],
+                    "gs" = data$Groupsize[complete.cases(data$avg_speed)],
+                    "kt"=1/(0.00008617*(data$Temperature[complete.cases(data$avg_speed)]+273.1)),
+                    "date"=as.numeric(as.Date(data$Date[complete.cases(data$avg_speed)], format = "%d/%m/%Y")),
+                    "trial" = data$Trial[complete.cases(data$avg_speed)],
+                    "subtrial" = data$Subtrial[complete.cases(data$avg_speed)],
+                    "t1" = as.numeric(as.POSIXct(data$Time_fish_in[complete.cases(data$avg_speed)], format = "%H:%M")),
+                    "t2" = as.numeric(as.POSIXct(data$Time_start_record[complete.cases(data$avg_speed)], format = "%H:%M")),
+                    "speed" = data$avg_speed[complete.cases(data$avg_speed)]
+)
+
+model_lm <- lm(log(speed+1) ~ temp,my_data)
+summary(model_lm)
+plot(fitted(model_lm),residuals(model_lm))
+#r sq =0.04
+qqnorm(residuals(model_lm), main= "")
+qqline(residuals(model_lm))
+extractAIC(model_lm) #-834
+#this is best
+
+
+model_lm <- lm(log(speed+1) ~ temp + I(temp^2) ,my_data)
+summary(model_lm)
+plot(fitted(model_lm),residuals(model_lm))
+#r sq =0.04
+qqnorm(residuals(model_lm), main= "")
+qqline(residuals(model_lm))
+extractAIC(model_lm) #-834
 #this is best
 
 ###############################################################################
@@ -126,7 +196,19 @@ model_lm <- lm(log(acc+1) ~ temp + log(gs,2) + I(log(gs,2)^2),my_new_data)
 summary(model_lm)
 plot(fitted(model_lm), residuals(model_lm))
 #r sq = 0.1936 # temp is significant
-extractAIC(model_lm) #-657
+extractAIC(model_lm) #-657 #best
+
+model_lm <- lm(log(acc+1) ~ log(gs,2) + I(log(gs,2)^2),my_new_data)
+summary(model_lm)
+plot(fitted(model_lm), residuals(model_lm))
+#r sq = 0.16
+extractAIC(model_lm) #-651
+
+model_lm <- lm(log(acc+1) ~ temp + log(gs,2),my_new_data)
+summary(model_lm)
+plot(fitted(model_lm), residuals(model_lm))
+#r sq = 0.1936 # temp is significant
+extractAIC(model_lm) #-632
 
 model_lm <- lm(log(acc+1) ~ temp + I(temp^2) + log(gs,2) + I(log(gs,2)^2),my_new_data)
 summary(model_lm)
@@ -460,6 +542,13 @@ extractAIC(model_lm) #-398 but residuals are terrible
 qqnorm(residuals(model_lm), main= "")
 qqline(residuals(model_lm))
 
+model_lm <- lm((speed)^0.5 ~ log(gs,2) + loom + I(log(gs,2)^2) + t1,my_data)
+summary(model_lm)
+plot(fitted(model_lm), residuals(model_lm))
+#r sq = 0.1872
+extractAIC(model_lm) #-179
+qqnorm(residuals(model_lm), main= "")
+qqline(residuals(model_lm))
 
 model_lm <- lm((speed)^0.5 ~ temp + I(temp^2) + log(gs,2) + loom + I(log(gs,2)^2) + t1,my_data)
 summary(model_lm)
@@ -843,6 +932,21 @@ summary(model_glm)
 binnedplot(fitted(model_glm),residuals(model_glm)) 
 #aic = 1311 #residuals not bad #best model?
 
+model_glm <-  glm(prop_startles ~ loom + date, family = binomial,my_data)
+summary(model_glm)
+binnedplot(fitted(model_glm),residuals(model_glm)) 
+#aic = 1350 #residuals not bad 
+
+model_glm <-  glm(prop_startles ~ temp + I(temp^2) + loom + date + log(gs,2), family = binomial,my_data)
+summary(model_glm)
+binnedplot(fitted(model_glm),residuals(model_glm)) 
+#aic = 1316 #residuals not bad 
+
+model_glm <-  glm(prop_startles ~ temp + loom + date + log(gs,2), family = binomial,my_data)
+summary(model_glm)
+binnedplot(fitted(model_glm),residuals(model_glm)) 
+#aic = 1330 #residuals not bad 
+
 newData1 <- data.frame(expand.grid(temp = seq(from = 9, to = 29, by = 1),
                                    loom = c(1,2,3,4,5), date = unique(my_data$date)))
 boots <- 10000
@@ -911,3 +1015,284 @@ plot(fitted(model_lm_trans),residuals(model_lm_trans))
 extractAIC(model_lm_trans) #-699
 qqnorm(residuals(model_lm_trans), main= "")
 qqline(residuals(model_lm_trans))
+
+model_lm_trans <- lm(log(annd) ~ temp*log(gs,2) + trial + date, my_data)
+summary(model_lm_trans)
+plot(fitted(model_lm_trans),residuals(model_lm_trans))
+extractAIC(model_lm_trans) #-698
+
+model_lm_trans <- lm(log(annd) ~ I(temp^2) +  temp*log(gs,2) + trial +date, my_data)
+summary(model_lm_trans)
+plot(fitted(model_lm_trans),residuals(model_lm_trans))
+#r sq = 0.414
+extractAIC(model_lm_trans) #-699
+qqnorm(residuals(model_lm_trans), main= "")
+qqline(residuals(model_lm_trans))
+
+model_lm_trans <- lm(log(annd) ~ log(gs,2) + trial + date, my_data)
+summary(model_lm_trans)
+plot(fitted(model_lm_trans),residuals(model_lm_trans))
+extractAIC(model_lm_trans) #-665
+
+
+#########################################################################
+
+#convex hull area after the loom
+
+
+data <- read.csv(here("Documents","data","temp_collective","roi","all_params_w_loom.csv"),header=TRUE,na.strings=c("[nan]"))
+
+
+# make new dataframe
+
+my_data<-data.frame("temp" = data$Temperature[complete.cases(data$convex_hull_area)],
+                    "gs" = data$Groupsize[complete.cases(data$convex_hull_area)],
+                    "loom" = data$Loom[complete.cases(data$convex_hull_area)],
+                    "kt"=1/(0.00008617*(data$Temperature[complete.cases(data$convex_hull_area)]+273.1)),
+                    "date"=as.numeric(as.Date(data$Date[complete.cases(data$convex_hull_area)], format = "%d/%m/%Y")),
+                    "trial" = data$Trial[complete.cases(data$convex_hull_area)],
+                    "subtrial" = data$Subtrial[complete.cases(data$convex_hull_area)],
+                    "t1" = as.numeric(as.POSIXct(data$Time_fish_in[complete.cases(data$convex_hull_area)], format = "%H:%M")),
+                    "t2" = as.numeric(as.POSIXct(data$Time_start_record[complete.cases(data$convex_hull_area)], format = "%H:%M")),
+                    "t" = as.numeric(as.POSIXct(data$Time_start_record[complete.cases(data$convex_hull_area)], format = "%H:%M")) -
+                      as.numeric(as.POSIXct(data$Time_fish_in[complete.cases(data$convex_hull_area)], format = "%H:%M")),
+                    "hull" = data$convex_hull_area[complete.cases(data$convex_hull_area)]
+)
+
+
+#############################################################################
+
+###############################3 speed before each loom #####################
+
+#############################################################################
+
+
+
+
+data <- read.csv(here("Documents","data","temp_collective","roi","speed_acc_before_loom_params_w_loom.csv"),header=TRUE,na.strings=c("[nan]"))
+
+my_data<-data.frame("temp" = data$Temperature[complete.cases(data$speed_percentile99)],
+                    "gs" = data$Groupsize[complete.cases(data$speed_percentile99)],
+                    "kt"=1/(0.00008617*(data$Temperature[complete.cases(data$speed_percentile99)]+273.1)),
+                    "date"=as.numeric(as.Date(data$Date[complete.cases(data$speed_percentile99)], format = "%d/%m/%Y")),
+                    "trial" = data$Trial[complete.cases(data$speed_percentile99)],
+                    "subtrial" = data$Subtrial[complete.cases(data$speed_percentile99)],
+                    "loom" = data$Loom[complete.cases(data$speed_percentile99)],
+                    "t1" = as.numeric(as.POSIXct(data$Time_fish_in[complete.cases(data$speed_percentile99)], format = "%H:%M")),
+                    "t2" = as.numeric(as.POSIXct(data$Time_start_record[complete.cases(data$speed_percentile99)], format = "%H:%M")),
+                    "speed" = data$speed_percentile99[complete.cases(data$speed_percentile99)]
+)
+
+
+
+model_lm <- lm(log(speed+1) ~ temp,my_data)
+summary(model_lm)
+plot(fitted(model_lm),residuals(model_lm))
+#r sq =0.074
+qqnorm(residuals(model_lm), main= "")
+qqline(residuals(model_lm))
+extractAIC(model_lm) #-2636
+
+hist(my_data$speed)
+hist(log(my_data$speed))
+hist(sqrt(my_data$speed))
+
+model_lm <- lm(log(speed+1) ~ temp + loom,my_data)
+summary(model_lm)
+plot(fitted(model_lm),residuals(model_lm))
+#r sq =0.074
+qqnorm(residuals(model_lm), main= "")
+qqline(residuals(model_lm))
+extractAIC(model_lm) #-2635
+
+model_lm <- lm(log(speed+1) ~ temp + I(temp^2),my_data)
+summary(model_lm)
+plot(fitted(model_lm),residuals(model_lm))
+#r sq =0.07622
+qqnorm(residuals(model_lm), main= "")
+qqline(residuals(model_lm))
+extractAIC(model_lm) #-2638
+#this is slightly better
+
+
+# avg speed
+
+
+data <- read.csv(here("Documents","data","temp_collective","roi","speed_acc_before_loom_params_w_loom.csv"),header=TRUE,na.strings=c("[nan]"))
+
+my_data<-data.frame("temp" = data$Temperature[complete.cases(data$avg_speed)],
+                    "gs" = data$Groupsize[complete.cases(data$avg_speed)],
+                    "kt"=1/(0.00008617*(data$Temperature[complete.cases(data$avg_speed)]+273.1)),
+                    "date"=as.numeric(as.Date(data$Date[complete.cases(data$avg_speed)], format = "%d/%m/%Y")),
+                    "trial" = data$Trial[complete.cases(data$avg_speed)],
+                    "subtrial" = data$Subtrial[complete.cases(data$avg_speed)],
+                    "loom" = data$Loom[complete.cases(data$avg_speed)],
+                    "t1" = as.numeric(as.POSIXct(data$Time_fish_in[complete.cases(data$avg_speed)], format = "%H:%M")),
+                    "t2" = as.numeric(as.POSIXct(data$Time_start_record[complete.cases(data$avg_speed)], format = "%H:%M")),
+                    "speed" = data$avg_speed[complete.cases(data$avg_speed)]
+)
+
+
+model_lm <- lm(log(speed+1) ~ temp,my_data)
+summary(model_lm)
+plot(fitted(model_lm),residuals(model_lm))
+#r sq =0.073
+qqnorm(residuals(model_lm), main= "")
+qqline(residuals(model_lm))
+extractAIC(model_lm) #-3727
+
+model_lm <- lm(log(speed+1) ~ temp + I(temp^2),my_data)
+summary(model_lm)
+plot(fitted(model_lm),residuals(model_lm))
+#r sq =0.073
+qqnorm(residuals(model_lm), main= "")
+qqline(residuals(model_lm))
+extractAIC(model_lm) #-3725
+
+# median acc
+
+data <- read.csv(here("Documents","data","temp_collective","roi","speed_acc_before_loom_params_w_loom.csv"),header=TRUE,na.strings=c("[nan]"))
+
+my_data<-data.frame("temp" = data$Temperature[complete.cases(data$speed_percentile50)],
+                    "gs" = data$Groupsize[complete.cases(data$speed_percentile50)],
+                    "kt"=1/(0.00008617*(data$Temperature[complete.cases(data$speed_percentile50)]+273.1)),
+                    "date"=as.numeric(as.Date(data$Date[complete.cases(data$speed_percentile50)], format = "%d/%m/%Y")),
+                    "trial" = data$Trial[complete.cases(data$speed_percentile50)],
+                    "subtrial" = data$Subtrial[complete.cases(data$speed_percentile50)],
+                    "loom" = data$Loom[complete.cases(data$speed_percentile50)],
+                    "t1" = as.numeric(as.POSIXct(data$Time_fish_in[complete.cases(data$speed_percentile50)], format = "%H:%M")),
+                    "t2" = as.numeric(as.POSIXct(data$Time_start_record[complete.cases(data$speed_percentile50)], format = "%H:%M")),
+                    "speed" = data$speed_percentile50[complete.cases(data$speed_percentile50)]
+)
+
+
+model_lm <- lm(log(speed+1) ~ temp,my_data)
+summary(model_lm)
+plot(fitted(model_lm),residuals(model_lm))
+#r sq =0.061
+qqnorm(residuals(model_lm), main= "")
+qqline(residuals(model_lm))
+extractAIC(model_lm) #-3728
+
+model_lm <- lm(log(speed+1) ~ temp + I(temp^2),my_data)
+summary(model_lm)
+plot(fitted(model_lm),residuals(model_lm))
+#r sq =0.061
+qqnorm(residuals(model_lm), main= "")
+qqline(residuals(model_lm))
+extractAIC(model_lm) #-3726
+
+
+#############################################################################
+
+################################## acc before each loom #####################
+
+#############################################################################
+
+
+data <- read.csv(here("Documents","data","temp_collective","roi","speed_acc_before_loom_params_w_loom.csv"),header=TRUE,na.strings=c("[nan]"))
+
+my_data<-data.frame("temp" = data$Temperature[complete.cases(data$acc_percentile99)],
+                    "gs" = data$Groupsize[complete.cases(data$acc_percentile99)],
+                    "kt"=1/(0.00008617*(data$Temperature[complete.cases(data$acc_percentile99)]+273.1)),
+                    "date"=as.numeric(as.Date(data$Date[complete.cases(data$acc_percentile99)], format = "%d/%m/%Y")),
+                    "trial" = data$Trial[complete.cases(data$acc_percentile99)],
+                    "subtrial" = data$Subtrial[complete.cases(data$acc_percentile99)],
+                    "loom" = data$Loom[complete.cases(data$acc_percentile99)],
+                    "t1" = as.numeric(as.POSIXct(data$Time_fish_in[complete.cases(data$acc_percentile99)], format = "%H:%M")),
+                    "t2" = as.numeric(as.POSIXct(data$Time_start_record[complete.cases(data$acc_percentile99)], format = "%H:%M")),
+                    "acc" = data$acc_percentile99[complete.cases(data$acc_percentile99)]
+)
+
+
+model_lm <- lm(log(acc+1) ~ temp + log(gs,2) + I(log(gs,2)^2),my_data)
+summary(model_lm)
+plot(fitted(model_lm), residuals(model_lm))
+#r sq = 0.078 # temp is significant
+qqnorm(residuals(model_lm), main= "")
+qqline(residuals(model_lm))
+extractAIC(model_lm) #-2562
+
+
+
+model_lm <- lm(log(acc+1) ~ I(temp^2) + temp + log(gs,2) + I(log(gs,2)^2),my_data)
+summary(model_lm)
+plot(fitted(model_lm), residuals(model_lm))
+#r sq = 0.088 # temp is significant
+qqnorm(residuals(model_lm), main= "")
+qqline(residuals(model_lm))
+extractAIC(model_lm) #-2573 #best
+
+
+#predictions
+
+
+
+
+
+#median acc
+my_data<-data.frame("temp" = data$Temperature[complete.cases(data$acc_percentile50)],
+                    "gs" = data$Groupsize[complete.cases(data$acc_percentile50)],
+                    "kt"=1/(0.00008617*(data$Temperature[complete.cases(data$acc_percentile50)]+273.1)),
+                    "date"=as.numeric(as.Date(data$Date[complete.cases(data$acc_percentile50)], format = "%d/%m/%Y")),
+                    "trial" = data$Trial[complete.cases(data$acc_percentile50)],
+                    "subtrial" = data$Subtrial[complete.cases(data$acc_percentile50)],
+                    "loom" = data$Loom[complete.cases(data$acc_percentile50)],
+                    "t1" = as.numeric(as.POSIXct(data$Time_fish_in[complete.cases(data$acc_percentile50)], format = "%H:%M")),
+                    "t2" = as.numeric(as.POSIXct(data$Time_start_record[complete.cases(data$acc_percentile50)], format = "%H:%M")),
+                    "acc" = data$acc_percentile50[complete.cases(data$acc_percentile50)]
+)
+
+
+
+
+model_lm <- lm(log(acc+1) ~ temp + log(gs,2) + I(log(gs,2)^2),my_data)
+summary(model_lm)
+plot(fitted(model_lm), residuals(model_lm))
+#r sq = 0.1677 # temp is significant
+qqnorm(residuals(model_lm), main= "")
+qqline(residuals(model_lm))
+extractAIC(model_lm) #-2916
+
+
+
+model_lm <- lm(log(acc+1) ~ I(temp^2) + temp + log(gs,2) + I(log(gs,2)^2),my_data)
+summary(model_lm)
+plot(fitted(model_lm), residuals(model_lm))
+#r sq = 0.1895 # temp is significant
+qqnorm(residuals(model_lm), main= "")
+qqline(residuals(model_lm))
+extractAIC(model_lm) #-2945 #best
+
+#avg acc
+
+my_data<-data.frame("temp" = data$Temperature[complete.cases(data$avg_acc)],
+                    "gs" = data$Groupsize[complete.cases(data$avg_acc)],
+                    "kt"=1/(0.00008617*(data$Temperature[complete.cases(data$avg_acc)]+273.1)),
+                    "date"=as.numeric(as.Date(data$Date[complete.cases(data$avg_acc)], format = "%d/%m/%Y")),
+                    "trial" = data$Trial[complete.cases(data$avg_acc)],
+                    "subtrial" = data$Subtrial[complete.cases(data$avg_acc)],
+                    "loom" = data$Loom[complete.cases(data$avg_acc)],
+                    "t1" = as.numeric(as.POSIXct(data$Time_fish_in[complete.cases(data$avg_acc)], format = "%H:%M")),
+                    "t2" = as.numeric(as.POSIXct(data$Time_start_record[complete.cases(data$avg_acc)], format = "%H:%M")),
+                    "acc" = data$avg_acc[complete.cases(data$avg_acc)]
+)
+
+
+model_lm <- lm(log(acc+1) ~ temp + log(gs,2) + I(log(gs,2)^2),my_data)
+summary(model_lm)
+plot(fitted(model_lm), residuals(model_lm))
+#r sq = 0.1858 # temp is significant
+qqnorm(residuals(model_lm), main= "")
+qqline(residuals(model_lm))
+extractAIC(model_lm) #-3280
+
+
+
+model_lm <- lm(log(acc+1) ~ I(temp^2) + temp + log(gs,2) + I(log(gs,2)^2),my_data)
+summary(model_lm)
+plot(fitted(model_lm), residuals(model_lm))
+#r sq = 0.1895 # temp is significant
+qqnorm(residuals(model_lm), main= "")
+qqline(residuals(model_lm))
+extractAIC(model_lm) #-3310 #best
