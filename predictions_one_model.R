@@ -836,4 +836,186 @@ newData1$speed50_975 <- results[,3]
 write.csv(newData1,here("..","..","..","Documents","data","temp_collective","roi","median_speed_preloom_predictions_one_model.csv"))
 
 
+#mean speed during predation threat
+require(rsq)
+require(lmtest)
+data <- read.csv(here("Documents","data","temp_collective","roi","all_params_w_loom.csv"),header=TRUE,na.strings=c("[nan]"))
+
+
+my_data<-data.frame("temp" = data$Temperature[complete.cases(data$avg_speed)],
+                    "gs" = data$Groupsize[complete.cases(data$avg_speed)],
+                    "loom" = data$Loom[complete.cases(data$avg_speed)],
+                    "speed" = data$avg_speed[complete.cases(data$avg_speed)]
+)
+
+
+model_lm <- lm(log(speed+1) ~ temp + I(temp^2) + log(gs,2) + loom,my_data)
+summary(model_lm)
+plot(fitted(model_lm), residuals(model_lm))
+#temp terms are not significant 
+rsq(model_lm) #0.0535
+
+qqnorm(residuals(model_lm), main= "")
+qqline(residuals(model_lm))
+
+model_lm_int <- lm(log(speed+1) ~ temp + I(temp^2) + log(gs,2) + loom+ temp*log(gs,2),my_data)
+summary(model_lm_int)
+plot(fitted(model_lm_int), residuals(model_lm_int))
+#temp terms are not significant 
+
+lrtest(model_lm,model_lm_int) #not significant
+
+newData1 <- data.frame(expand.grid(temp = seq(from = 9, to = 29, by = 1), gs = c(1,2,4,8,16), 
+                                   loom = c(1,2,3,4,5)))
+boots <- 10000
+yest <- matrix(NA,nrow=nrow(newData1),ncol=boots)
+for(i in 1:boots){
+  ynew <- unlist(simulate(model_lm))
+  ymod <- update(model_lm,ynew ~ .)
+  yest[,i] <- predict(ymod,newdata = newData1, type="response")
+}
+results <- matrix(NA,nrow=nrow(newData1),ncol=3)
+results[,1] <- predict(model_lm,newData1, type = "response")
+for(j in 1:nrow(newData1)){
+  results[j,2] <- quantile(yest[j,],probs = c(0.025))
+  results[j,3] <- quantile(yest[j,],probs = c(0.975))
+}  
+newData1$avg_speed<- results[,1]
+newData1$avg_speed_025 <- results[,2]
+newData1$avg_speed_975 <- results[,3]
+
+write.csv(newData1,here("Documents","data","temp_collective","roi","avg_speed_loom_predictions_one_model.csv"))
+
+
+#median speed during predation threat
+
+my_data<-data.frame("temp" = data$Temperature[complete.cases(data$speed_percentile50)],
+                    "gs" = data$Groupsize[complete.cases(data$speed_percentile50)],
+                    "loom" = data$Loom[complete.cases(data$speed_percentile50)],
+                    "speed" = data$speed_percentile50[complete.cases(data$speed_percentile50)]
+)
+
+model_lm <- lm(log(speed+1) ~ temp + I(temp^2) + log(gs,2) + loom,my_data)
+summary(model_lm)
+plot(fitted(model_lm), residuals(model_lm))
+#temp terms are not significant 
+rsq(model_lm) #0.0344
+qqnorm(residuals(model_lm), main= "")
+qqline(residuals(model_lm))
+
+model_lm_int <- lm(log(speed+1) ~ temp + I(temp^2) + log(gs,2) + loom + temp*log(gs,2),my_data)
+summary(model_lm_int)
+plot(fitted(model_lm_int), residuals(model_lm_int))
+#temp terms are not significant 
+
+lrtest(model_lm,model_lm_int) #not significant
+
+newData1 <- data.frame(expand.grid(temp = seq(from = 9, to = 29, by = 1), gs = c(1,2,4,8,16), 
+                                   loom = c(1,2,3,4,5)))
+boots <- 10000
+yest <- matrix(NA,nrow=nrow(newData1),ncol=boots)
+for(i in 1:boots){
+  ynew <- unlist(simulate(model_lm))
+  ymod <- update(model_lm,ynew ~ .)
+  yest[,i] <- predict(ymod,newdata = newData1, type="response")
+}
+results <- matrix(NA,nrow=nrow(newData1),ncol=3)
+results[,1] <- predict(model_lm,newData1, type = "response")
+for(j in 1:nrow(newData1)){
+  results[j,2] <- quantile(yest[j,],probs = c(0.025))
+  results[j,3] <- quantile(yest[j,],probs = c(0.975))
+}  
+newData1$speed50<- results[,1]
+newData1$speed50_025 <- results[,2]
+newData1$speed50_975 <- results[,3]
+
+write.csv(newData1,here("Documents","data","temp_collective","roi","median_speed_loom_predictions_one_model.csv"))
+
+#mean acceleration during loom
+
+my_data<-data.frame("temp" = data$Temperature[complete.cases(data$avg_acc)],
+                    "gs" = data$Groupsize[complete.cases(data$avg_acc)],
+                    "loom" = data$Loom[complete.cases(data$avg_acc)],
+                    "acc" = data$avg_acc[complete.cases(data$avg_acc)]
+)
+
+model_lm <- lm(log(acc+1) ~ temp + I(temp^2) + log(gs,2) + loom,my_data)
+summary(model_lm)
+plot(fitted(model_lm), residuals(model_lm))
+
+rsq(model_lm) #0.0797
+qqnorm(residuals(model_lm), main= "")
+qqline(residuals(model_lm))
+
+model_lm_int <- lm(log(acc+1) ~ temp + I(temp^2) + log(gs,2) + loom + temp*log(gs,2),my_data)
+summary(model_lm_int)
+plot(fitted(model_lm_int), residuals(model_lm_int))
+rsq(model_lm_int) #0.0871
+
+lrtest(model_lm,model_lm_int) # significant
+
+newData1 <- data.frame(expand.grid(temp = seq(from = 9, to = 29, by = 1), gs = c(1,2,4,8,16), 
+                                   loom = c(1,2,3,4,5)))
+boots <- 10000
+yest <- matrix(NA,nrow=nrow(newData1),ncol=boots)
+for(i in 1:boots){
+  ynew <- unlist(simulate(model_lm_int))
+  ymod <- update(model_lm_int,ynew ~ .)
+  yest[,i] <- predict(ymod,newdata = newData1, type="response")
+}
+results <- matrix(NA,nrow=nrow(newData1),ncol=3)
+results[,1] <- predict(model_lm_int,newData1, type = "response")
+for(j in 1:nrow(newData1)){
+  results[j,2] <- quantile(yest[j,],probs = c(0.025))
+  results[j,3] <- quantile(yest[j,],probs = c(0.975))
+}  
+newData1$avg_acc<- results[,1]
+newData1$avg_acc_025 <- results[,2]
+newData1$avg_acc_975 <- results[,3]
+
+write.csv(newData1,here("Documents","data","temp_collective","roi","average_acc_loom_predictions_one_model.csv"))
+
+
+#median acceleration during loom
+
+my_data<-data.frame("temp" = data$Temperature[complete.cases(data$acc_percentile50)],
+                    "gs" = data$Groupsize[complete.cases(data$acc_percentile50)],
+                    "loom" = data$Loom[complete.cases(data$acc_percentile50)],
+                    "acc" = data$acc_percentile50[complete.cases(data$acc_percentile50)]
+)
+
+model_lm <- lm(log(acc+1) ~ temp + I(temp^2) + log(gs,2) + loom,my_data)
+summary(model_lm)
+plot(fitted(model_lm), residuals(model_lm))
+
+rsq(model_lm) #0.0826
+qqnorm(residuals(model_lm), main= "")
+qqline(residuals(model_lm))
+
+model_lm_int <- lm(log(acc+1) ~ temp + I(temp^2) + log(gs,2) + loom + temp*log(gs,2),my_data)
+summary(model_lm_int)
+plot(fitted(model_lm_int), residuals(model_lm_int))
+
+lrtest(model_lm,model_lm_int) # not significant
+
+newData1 <- data.frame(expand.grid(temp = seq(from = 9, to = 29, by = 1), gs = c(1,2,4,8,16), 
+                                   loom = c(1,2,3,4,5)))
+boots <- 10000
+yest <- matrix(NA,nrow=nrow(newData1),ncol=boots)
+for(i in 1:boots){
+  ynew <- unlist(simulate(model_lm))
+  ymod <- update(model_lm,ynew ~ .)
+  yest[,i] <- predict(ymod,newdata = newData1, type="response")
+}
+results <- matrix(NA,nrow=nrow(newData1),ncol=3)
+results[,1] <- predict(model_lm,newData1, type = "response")
+for(j in 1:nrow(newData1)){
+  results[j,2] <- quantile(yest[j,],probs = c(0.025))
+  results[j,3] <- quantile(yest[j,],probs = c(0.975))
+}  
+newData1$acc50<- results[,1]
+newData1$acc50_025 <- results[,2]
+newData1$acc50_975 <- results[,3]
+
+write.csv(newData1,here("Documents","data","temp_collective","roi","median_acc_loom_predictions_one_model.csv"))
 
