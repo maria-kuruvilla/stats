@@ -1019,3 +1019,62 @@ newData1$acc50_975 <- results[,3]
 
 write.csv(newData1,here("Documents","data","temp_collective","roi","median_acc_loom_predictions_one_model.csv"))
 
+#number of startles
+
+my_data<-data.frame("temp" = data$Temperature[complete.cases(data$number_startles)],
+                    "gs" = data$Groupsize[complete.cases(data$number_startles)],
+                    "loom" = data$Loom[complete.cases(data$number_startles)],
+                    "startles" = data$number_startles[complete.cases(data$number_startles)]
+)
+
+model_lm <- lm(startles ~ temp + I(temp^2) + log(gs,2) + loom,my_data)
+summary(model_lm)
+plot(fitted(model_lm), residuals(model_lm))
+
+my_data2 <-data.frame("temp" = data$Temperature[complete.cases(data$number_startles)],
+                    "gs" = data$Groupsize[complete.cases(data$number_startles)],
+                    "loom" = data$Loom[complete.cases(data$number_startles)],
+                    "startles" = data$number_startles[complete.cases(data$number_startles)]/data$Groupsize[complete.cases((data$number_startles))]
+)
+
+model_lm <- lm(startles ~ temp + I(temp^2) + log(gs,2) + loom,my_data2)
+summary(model_lm)
+plot(fitted(model_lm), residuals(model_lm))
+
+require(MASS)
+boxcox(model_lm, lambda = seq(0, 1, 1/10), plotit = TRUE) #0.5
+
+
+model_glm <- glm.nb(startles ~ temp + I(temp^2) + log(gs,2) + loom,my_data)
+summary(model_glm)
+plot(fitted(model_glm), residuals(model_glm))
+
+model_glm <- glm(startles ~ temp + I(temp^2) + log(gs,2) + loom, family = poisson, my_data)
+summary(model_glm)
+plot(fitted(model_glm), residuals(model_glm))
+
+#not working
+
+#spontaneous startles
+data <- read.csv(here("Documents","data","temp_collective","roi","spontaneous_startles_preloom.csv"),header=TRUE,na.strings=c("[nan]"))
+
+
+my_data<-data.frame("temp" = data$Temperature[complete.cases(data$number_startles)],
+                    "gs" = data$Groupsize[complete.cases(data$number_startles)],
+                    "startles" = data$number_startles[complete.cases(data$number_startles)]
+)
+
+model_lm <- lm(startles ~ temp + I(temp^2) + log(gs,2),my_data)
+summary(model_lm)
+plot(fitted(model_lm), residuals(model_lm))
+#residuals are really bad
+
+my_data<-data.frame("temp" = data$Temperature[complete.cases(data$number_startles)],
+                    "gs" = data$Groupsize[complete.cases(data$number_startles)],
+                    "startles" = data$number_startles[complete.cases(data$number_startles)]/data$Groupsize[complete.cases(data$number_startles)]
+)
+
+model_lm <- lm(startles ~ temp + I(temp^2) + log(gs,2),my_data)
+summary(model_lm)
+plot(fitted(model_lm), residuals(model_lm))
+#residuals are really bad
