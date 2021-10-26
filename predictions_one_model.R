@@ -651,6 +651,9 @@ plot(fitted(model_lm), residuals(model_lm))
 rsq(model_lm)
 #0.0628
 
+qqnorm(residuals(model_lm), main= "")
+qqline(residuals(model_lm))
+
 
 
 newData1 <- data.frame(expand.grid(temp = seq(from = 9, to = 29, by = 1), gs = c(2,4,8,16),
