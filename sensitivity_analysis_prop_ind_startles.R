@@ -61,7 +61,7 @@ for(i in 10:30){
 }
 
 outcome <- as.data.frame(matrix_data)
-colnames(outcome)  <- c("Intercept","T","T2","Loom","p_int","p_t", "p_t2", "p_loom","null","residual","aic","startle_threshold")
+colnames(outcome)  <- c("Intercept","T","T2","Loom","p_int","p_t", "p_t2", "p_loom","startle_threshold")
 
 
 
