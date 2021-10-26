@@ -102,10 +102,30 @@ plot(outcome$startle[list1],outcome$T[list1])
 plot(outcome$startle[list2],outcome$T[list2])
 plot(outcome$speed[list3],outcome$T[list3])
 
+par(mar = c(4.1, 4.4, 4.1, 1.9))
+
 mean(outcome$T[grepl(a,outcome$x)][outcome$startle==12], na.rm=TRUE)
 
 
-matrix_t <- matrix(data= NA, nrow = 4, ncol = 3)#, colnames = c("Intercept","T","T2","GS",Loom","int",p_int","p_t", "p_t2","p_gs", "p_loom","p_int"))
+matrix_t <- matrix(data= NA, nrow = 4, ncol = 3)
+matrix_tt <- matrix(data= NA, nrow = 4, ncol = 3)
+matrix_gs <- matrix(data= NA, nrow = 4, ncol = 3)
+matrix_loom <- matrix(data= NA, nrow = 4, ncol = 3)
+matrix_int <- matrix(data= NA, nrow = 4, ncol = 3)
+
+matrix_p_t <- matrix(data= NA, nrow = 4, ncol = 3)
+matrix_p_tt <- matrix(data= NA, nrow = 4, ncol = 3)#, colnames = c("Intercept","T","T2","GS",Loom","int",p_int","p_t", "p_t2","p_gs", "p_loom","p_int"))
+matrix_p_gs <- matrix(data= NA, nrow = 4, ncol = 3)
+matrix_p_loom <- matrix(data= NA, nrow = 4, ncol = 3)
+matrix_p_int <- matrix(data= NA, nrow = 4, ncol = 3)
+
+rownames(matrix_t) <- c("Latency","Proportion","Speed","Acceleration")
+rownames(matrix_p_t) <- c("Latency","Proportion","Speed","Acceleration")
+
+colnames(matrix_t) <- c("Startle","Speed","Acceleration")
+colnames(matrix_p_t) <- c("Startle","Speed","Acceleration")
+
+
 for(i in 1:4){
   if(i ==1){
     a <- "^lat"
@@ -133,8 +153,104 @@ for(i in 1:4){
       t2 <- 4000
       t1 <- 3000
     }
+    for( k  in 1:5){
+      v1 = mean(outcome[,k+1][grepl(a,outcome$x)][outcome[,j+1]==t1], na.rm=TRUE)
+      v2 = mean(outcome[,k+1][grepl(a,outcome$x)][outcome[,j+1]==t2], na.rm=TRUE)
+      
+      v1_p = mean(outcome[,k+11][grepl(a,outcome$x)][outcome[,j+1]==t1], na.rm=TRUE)
+      v2_p = mean(outcome[,k+11][grepl(a,outcome$x)][outcome[,j+1]==t2], na.rm=TRUE)
+      
+      matrix_t[i,j] <- ((v2-v1)/v1)/((t2-t1)/t1)
+      print(matrix_t)
+      matrix_p_t[i,j] <- ((v2_p-v1_p)/v1_p)/((t2-t1)/t1)
+      print(matrix_p_t)
+    }
     v1 = mean(outcome$T[grepl(a,outcome$x)][outcome[,j+1]==t1], na.rm=TRUE)
     v2 = mean(outcome$T[grepl(a,outcome$x)][outcome[,j+1]==t2], na.rm=TRUE)
+    
+    v1_tt = mean(outcome$T2[grepl(a,outcome$x)][outcome[,j+1]==t1], na.rm=TRUE)
+    v2_tt = mean(outcome$T2[grepl(a,outcome$x)][outcome[,j+1]==t2], na.rm=TRUE)
+    
+    v1_gs = mean(outcome$GS[grepl(a,outcome$x)][outcome[,j+1]==t1], na.rm=TRUE)
+    v2_gs = mean(outcome$GS[grepl(a,outcome$x)][outcome[,j+1]==t2], na.rm=TRUE)
+    
+    v1_loom = mean(outcome$Loom[grepl(a,outcome$x)][outcome[,j+1]==t1], na.rm=TRUE)
+    v2_loom = mean(outcome$Loom[grepl(a,outcome$x)][outcome[,j+1]==t2], na.rm=TRUE)
+    
+    v1_int = mean(outcome$int[grepl(a,outcome$x)][outcome[,j+1]==t1], na.rm=TRUE)
+    v2_int = mean(outcome$int[grepl(a,outcome$x)][outcome[,j+1]==t2], na.rm=TRUE)
+    
     matrix_t[i,j] <- ((v2-v1)/v1)/((t2-t1)/t1)
+    matrix_tt[i,j] <- ((v2_tt-v1_tt)/v1_tt)/((t2-t1)/t1)
+    matrix_gs[i,j] <- ((v2_gs-v1_gs)/v1_gs)/((t2-t1)/t1)
+    matrix_loom[i,j] <- ((v2_loom-v1_loom)/v1_loom)/((t2-t1)/t1)
+    matrix_int[i,j] <- ((v2_int-v1_int)/v1_int)/((t2-t1)/t1)
   }
 }
+print(matrix_t)
+# print(matrix_tt)
+# print(matrix_gs)
+# print(matrix_loom)
+# print(matrix_int)
+
+sig <- c("Temperature", "Significance of Temperature","Temperature^2", 
+         "Significance of Temperature^2","Group size", 
+         "Significance of Group size","Loom", "Significance of Loom",
+         "Interaction", "Significance of Interaction")
+
+for( k  in 1:5){
+  
+  matrix_t <- matrix(data= NA, nrow = 4, ncol = 3)
+  matrix_p_t <- matrix(data= NA, nrow = 4, ncol = 3)
+  
+  for(i in 1:4){
+    if(i ==1){
+      a <- "^lat"
+    }
+    if(i ==2){
+      a <- "^prop"
+    }
+    if(i ==3){
+      a <- "^speed"
+    }
+    if(i ==4){
+      a <- "^acc"
+    }
+    
+    for(j in 1:3){
+      if(j ==1){
+        t2 <- 12
+        t1 <- 10
+      }
+      if(j ==2){
+        t2 <- 35
+        t1 <- 30
+      }
+      if(j ==3){
+        t2 <- 4000
+        t1 <- 3000
+      }
+      
+      v1 = mean(outcome[,k+5][grepl(a,outcome$x)][outcome[,j+1]==t1], na.rm=TRUE)
+      v2 = mean(outcome[,k+5][grepl(a,outcome$x)][outcome[,j+1]==t2], na.rm=TRUE)
+      
+      v1_p = mean(outcome[,k+11][grepl(a,outcome$x)][outcome[,j+1]==t1], na.rm=TRUE)
+      v2_p = mean(outcome[,k+11][grepl(a,outcome$x)][outcome[,j+1]==t2], na.rm=TRUE)
+      
+      matrix_t[i,j] <- ((v2-v1)/v1)/((t2-t1)/t1)
+      
+      matrix_p_t[i,j] <- ((v2_p-v1_p)/v1_p)/((t2-t1)/t1)
+    }
+  }
+  
+  rownames(matrix_t) <- c("Latency","Proportion","Speed","Acceleration")
+  rownames(matrix_p_t) <- c("Latency","Proportion","Speed","Acceleration")
+  
+  colnames(matrix_t) <- c("Startle","Speed","Acceleration")
+  colnames(matrix_p_t) <- c("Startle","Speed","Acceleration")
+  print(sig[k*2-1])
+  print(matrix_t)
+  print(sig[k*2])
+  print(matrix_p_t)
+}
+
